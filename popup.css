@@ -1,0 +1,182 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  min-height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 20px;
+  background: #fffaf0; /* cream color */
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.logo-small {
+  width: 32px;
+  height: 32px;
+}
+
+h2 {
+  text-align: center;
+  color: #2d3748;
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+p {
+  text-align: center;
+  color: #718096;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+#user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 12px 24px;
+  background: #d4704c; /* terracotta */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: #c06040;
+}
+
+.btn-primary:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: #d4704c;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: opacity 0.2s;
+}
+
+.btn-text:hover {
+  opacity: 0.7;
+}
+
+/* URL Display */
+.url-info {
+  margin-bottom: 20px;
+}
+
+.url-info label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #718096;
+  margin-bottom: 6px;
+}
+
+#url-display {
+  font-size: 13px;
+  color: #2d3748;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  word-break: break-all;
+  max-height: 60px;
+  overflow-y: auto;
+}
+
+/* Quota Info */
+#quota-info {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #718096;
+}
+
+/* Status Messages */
+.status {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  display: none;
+}
+
+.status.success {
+  display: block;
+  background: #c6f6d5;
+  color: #22543d;
+  border: 1px solid #9ae6b4;
+}
+
+.status.error {
+  display: block;
+  background: #fed7d7;
+  color: #742a2a;
+  border: 1px solid #fc8181;
+}
+
+.status.info {
+  display: block;
+  background: #bee3f8;
+  color: #2c5282;
+  border: 1px solid #90cdf4;
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

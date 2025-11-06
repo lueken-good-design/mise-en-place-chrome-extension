@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mise en Place</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Not Logged In View -->
+  <div id="auth-section">
+    <img src="images/logo.png" alt="Mise en Place" class="logo">
+    <h2>Import This Recipe</h2>
+    <p>Log in to your Mise en Place account to get started</p>
+    <button id="login-btn" class="btn-primary">Log In to Mise en Place</button>
+  </div>
+
+  <!-- Logged In View -->
+  <div id="import-section" style="display: none;">
+    <div class="header">
+      <img src="images/logo.png" alt="Mise en Place" class="logo-small">
+      <div class="user-info">
+        <span id="user-name">Loading...</span>
+        <button id="logout-btn" class="btn-text">Logout</button>
+      </div>
+    </div>
+
+    <div class="url-info">
+      <label>Current Page:</label>
+      <div id="url-display">Loading...</div>
+    </div>
+
+    <button id="import-btn" class="btn-primary">
+      <span id="import-text">Import Recipe</span>
+      <span id="import-spinner" class="spinner" style="display: none;"></span>
+    </button>
+
+    <div id="quota-info">
+      <span id="quota-text">Loading quota...</span>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
