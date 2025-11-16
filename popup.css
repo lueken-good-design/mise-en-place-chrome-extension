@@ -5,11 +5,14 @@
 }
 
 body {
-  width: 360px;
-  min-height: 400px;
+  width: 100%; /* Side panel is responsive */
+  min-width: 300px;
+  max-width: 500px;
+  min-height: 100vh; /* Full height in side panel */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   padding: 20px;
   background: #fffaf0; /* cream color */
+  margin: 0 auto; /* Center content if panel is very wide */
 }
 
 .logo {
@@ -34,8 +37,42 @@ h2 {
 p {
   text-align: center;
   color: #718096;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   font-size: 14px;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2d3748;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #d4704c;
+  box-shadow: 0 0 0 3px rgba(212, 112, 76, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #cbd5e0;
 }
 
 /* Header */
@@ -100,6 +137,81 @@ p {
 
 .btn-text:hover {
   opacity: 0.7;
+}
+
+.btn-text-small {
+  background: none;
+  border: none;
+  color: #718096;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px;
+  width: 100%;
+  text-align: center;
+  margin-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-text-small:hover {
+  color: #d4704c;
+  background: rgba(212, 112, 76, 0.05);
+}
+
+.settings-footer {
+  margin-top: 16px;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px 24px;
+  background: white;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+/* Alternative Login */
+.alt-login {
+  margin-top: 20px;
+}
+
+.divider {
+  text-align: center;
+  color: #a0aec0;
+  font-size: 12px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
 }
 
 /* URL Display */

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mise en Place - Advanced Import</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <!-- Not Logged In View -->
+  <div id="auth-section">
+    <img src="images/logo.png" alt="Mise en Place" class="logo">
+    <h2>Advanced Recipe Import</h2>
+    <p>Log in to your Mise en Place account</p>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="your@email.com">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="••••••••">
+      </div>
+
+      <button type="submit" id="login-btn" class="btn-primary">
+        <span id="login-text">Log In</span>
+        <span id="login-spinner" class="spinner" style="display: none;"></span>
+      </button>
+    </form>
+
+    <div class="alt-login">
+      <div class="divider">or</div>
+      <button id="google-login-btn" class="btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+          <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.335z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- Logged In View with Tabs -->
+  <div id="import-section" style="display: none;">
+    <!-- Header -->
+    <div class="header">
+      <img src="images/logo.png" alt="Mise en Place" class="logo-small">
+      <div class="user-info">
+        <span id="user-name">Loading...</span>
+        <button id="logout-btn" class="btn-text">Logout</button>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="advanced">Advanced</button>
+      <button class="tab-btn" data-tab="bulk">Bulk Import</button>
+    </div>
+
+    <!-- Tab: Advanced Import -->
+    <div id="tab-advanced" class="tab-content active">
+      <div class="url-info">
+        <label>Current Page:</label>
+        <div id="url-display-advanced">Loading...</div>
+      </div>
+
+      <button id="preview-btn" class="btn-secondary">
+        <span id="preview-text">Preview Recipe</span>
+        <span id="preview-spinner" class="spinner" style="display: none;"></span>
+      </button>
+
+      <div id="preview-container" style="display: none;">
+        <div class="preview-section">
+          <label>Recipe Title</label>
+          <input type="text" id="preview-title" class="input-large" placeholder="Recipe title">
+        </div>
+
+        <div class="preview-section">
+          <label>Description</label>
+          <textarea id="preview-description" rows="3" placeholder="Recipe description"></textarea>
+        </div>
+
+        <div class="preview-section">
+          <label>Ingredients</label>
+          <div id="preview-ingredients" class="editable-list"></div>
+        </div>
+
+        <div class="preview-section">
+          <label>Steps</label>
+          <div id="preview-steps" class="editable-list"></div>
+        </div>
+
+        <button id="save-edited-btn" class="btn-primary">
+          <span id="save-text">Save Recipe</span>
+          <span id="save-spinner" class="spinner" style="display: none;"></span>
+        </button>
+      </div>
+
+      <div id="status-advanced" class="status"></div>
+    </div>
+
+    <!-- Tab: Bulk Import -->
+    <div id="tab-bulk" class="tab-content">
+      <p class="tab-description">Import multiple recipes from open tabs</p>
+
+      <button id="scan-tabs-btn" class="btn-secondary">
+        <span>Scan Open Tabs</span>
+      </button>
+
+      <div id="tabs-list" class="tabs-list"></div>
+
+      <button id="import-selected-btn" class="btn-primary" style="display: none;">
+        <span id="bulk-import-text">Import Selected Recipes</span>
+        <span id="bulk-import-spinner" class="spinner" style="display: none;"></span>
+      </button>
+
+      <div id="bulk-progress" class="progress-container" style="display: none;">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div id="progress-text">Importing 0 of 0...</div>
+      </div>
+
+      <div id="status-bulk" class="status"></div>
+    </div>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>
