@@ -127,8 +127,9 @@ async function handleLogin(e) {
         userName: data.user?.name || email
       });
 
-      // Show import view
-      showImportView(data.user?.name || email);
+      // Show import view - use display_name if available, fallback to name or email
+      const displayName = data.user?.display_name || data.user?.name || email;
+      showImportView(displayName);
       loadQuota(data.token);
       showStatus('Logged in successfully!', 'success');
     } else {

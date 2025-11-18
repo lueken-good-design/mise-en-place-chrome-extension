@@ -159,16 +159,22 @@ p {
 }
 
 .btn-primary:disabled {
-  background: #cbd5e0;
+  background: #d4704c;
+  opacity: 0.8;
   cursor: not-allowed;
+}
+
+.btn-primary:disabled .spinner {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
 }
 
 .btn-secondary {
   width: 100%;
   padding: 10px 24px;
-  background: white;
-  color: #2d3748;
-  border: 2px solid #e2e8f0;
+  background: #839883;
+  color: white;
+  border: 2px solid #6a7d6a;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
@@ -182,8 +188,19 @@ p {
 }
 
 .btn-secondary:hover {
-  border-color: #d4704c;
-  background: rgba(212, 112, 76, 0.05);
+  background: #6a7d6a;
+  border-color: #556655;
+}
+
+.btn-secondary:disabled {
+  background: #839883;
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.btn-secondary:disabled .spinner {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
 }
 
 .btn-text {
@@ -500,4 +517,83 @@ textarea:focus {
   color: #a0aec0;
   padding: 40px 20px;
   font-size: 14px;
+}
+
+/* Info Message for Bulk Import */
+.info-message {
+  background: #ebf8ff;
+  border: 1px solid #90cdf4;
+  color: #2c5282;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Multi-recipe tabs */
+#multi-recipe-header {
+  margin-bottom: 16px;
+}
+
+.recipe-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.recipe-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  flex: 1;
+  min-width: 120px;
+}
+
+.recipe-tab:hover {
+  border-color: #d4704c;
+}
+
+.recipe-tab.active {
+  border-color: #d4704c;
+  background: rgba(212, 112, 76, 0.05);
+}
+
+.recipe-tab input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.recipe-tab-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.select-all-container {
+  padding: 8px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #4a5568;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
 }

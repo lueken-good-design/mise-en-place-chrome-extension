@@ -73,24 +73,38 @@
       </button>
 
       <div id="preview-container" style="display: none;">
-        <div class="preview-section">
-          <label>Recipe Title</label>
-          <input type="text" id="preview-title" class="input-large" placeholder="Recipe title">
+        <!-- Multi-recipe tabs (shown when multiple recipes found) -->
+        <div id="multi-recipe-header" style="display: none;">
+          <div class="recipe-tabs" id="recipe-tabs"></div>
+          <div class="select-all-container">
+            <label class="checkbox-label">
+              <input type="checkbox" id="select-all-recipes" checked>
+              <span>Select All</span>
+            </label>
+          </div>
         </div>
 
-        <div class="preview-section">
-          <label>Description</label>
-          <textarea id="preview-description" rows="3" placeholder="Recipe description"></textarea>
-        </div>
+        <!-- Single recipe content (or active tab content) -->
+        <div id="recipe-content">
+          <div class="preview-section">
+            <label>Recipe Title</label>
+            <input type="text" id="preview-title" class="input-large" placeholder="Recipe title">
+          </div>
 
-        <div class="preview-section">
-          <label>Ingredients</label>
-          <div id="preview-ingredients" class="editable-list"></div>
-        </div>
+          <div class="preview-section">
+            <label>Description</label>
+            <textarea id="preview-description" rows="3" placeholder="Recipe description"></textarea>
+          </div>
 
-        <div class="preview-section">
-          <label>Steps</label>
-          <div id="preview-steps" class="editable-list"></div>
+          <div class="preview-section">
+            <label>Ingredients</label>
+            <div id="preview-ingredients" class="editable-list"></div>
+          </div>
+
+          <div class="preview-section">
+            <label>Steps</label>
+            <div id="preview-steps" class="editable-list"></div>
+          </div>
         </div>
 
         <button id="save-edited-btn" class="btn-primary">

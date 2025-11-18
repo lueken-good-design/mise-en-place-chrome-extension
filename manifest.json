@@ -5,7 +5,7 @@
   "description": "Import recipes from any website or YouTube video directly to your Mise en Place account",
 
   "permissions": [
-    "activeTab",
+    "tabs",
     "storage",
     "sidePanel"
   ],

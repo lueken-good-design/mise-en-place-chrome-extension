@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(php artisan tinker:*)",
+      "Bash(php artisan:*)",
+      "Bash(composer show:*)",
+      "Bash(nul)",
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

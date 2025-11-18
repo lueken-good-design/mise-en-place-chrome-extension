@@ -13,6 +13,7 @@ let previewBtn, previewText, previewSpinner, previewContainer;
 let saveEditedBtn, saveText, saveSpinner;
 let previewTitle, previewDescription, previewIngredients, previewSteps;
 let statusAdvanced, urlDisplayAdvanced;
+let multiRecipeHeader, recipeTabs, selectAllRecipes;
 
 // Bulk import elements
 let scanTabsBtn, tabsList, importSelectedBtn, bulkImportText, bulkImportSpinner;
@@ -21,6 +22,13 @@ let bulkProgress, progressFill, progressText, statusBulk;
 // State
 let currentRecipeData = null;
 let selectedTabs = new Set();
+
+// Multi-recipe state
+let allRecipes = [];           // Array of all recipes from preview
+let selectedRecipes = [];      // Boolean array for selection state
+let activeRecipeIndex = 0;     // Currently displayed recipe
+let currentLogId = null;       // Shared log ID for all recipes
+let currentSourceUrl = null;   // Source URL for the import
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -48,6 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
   previewSteps = document.getElementById('preview-steps');
   statusAdvanced = document.getElementById('status-advanced');
   urlDisplayAdvanced = document.getElementById('url-display-advanced');
+  multiRecipeHeader = document.getElementById('multi-recipe-header');
+  recipeTabs = document.getElementById('recipe-tabs');
+  selectAllRecipes = document.getElementById('select-all-recipes');
 
   // Bulk import tab elements
   scanTabsBtn = document.getElementById('scan-tabs-btn');
@@ -87,6 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Get current tab URL
   getCurrentTabUrl();
+
+  // Listen for tab changes and update URL display
+  chrome.tabs.onActivated.addListener(async (activeInfo) => {
+    await getCurrentTabUrl();
+  });
 });
 
 // Tab Switching
@@ -156,12 +172,15 @@ async function handleLogin(e) {
     const data = await response.json();
 
     if (response.ok && data.token) {
+      // Use display_name if available, fallback to name or email
+      const displayName = data.user?.display_name || data.user?.name || email;
+
       await chrome.storage.local.set({
         authToken: data.token,
-        userName: data.user?.name || email
+        userName: displayName
       });
 
-      showImportView(data.user?.name || email);
+      showImportView(displayName);
       showStatus(statusAdvanced, 'Logged in successfully!', 'success');
     } else {
       showStatus(statusAdvanced, data.message || 'Invalid email or password', 'error');
@@ -250,6 +269,9 @@ async function handlePreview() {
   previewText.style.display = 'none';
   previewSpinner.style.display = 'inline-block';
 
+  // Show duration message
+  showStatus(statusAdvanced, 'Importing... This may take 10-30 seconds', 'info');
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/extension/preview`, {
       method: 'POST',
@@ -263,11 +285,43 @@ async function handlePreview() {
 
     const data = await response.json();
 
-    if (response.ok && data.recipe_data) {
-      currentRecipeData = data.recipe_data;
-      displayPreview(data.recipe_data);
-      previewContainer.style.display = 'block';
-      showStatus(statusAdvanced, 'Preview loaded! Edit and save when ready.', 'success');
+    if (response.ok) {
+      currentLogId = data.log_id;
+      currentSourceUrl = url;
+
+      // Check if this is a multi-recipe response (YouTube)
+      if (data.recipes && data.recipe_count > 1) {
+        // Multi-recipe mode
+        allRecipes = data.recipes;
+        selectedRecipes = new Array(data.recipe_count).fill(true);
+        activeRecipeIndex = 0;
+        currentRecipeData = allRecipes[0];
+
+        // Show multi-recipe UI
+        displayMultiRecipeTabs();
+        displayPreview(allRecipes[0]);
+        multiRecipeHeader.style.display = 'block';
+        previewContainer.style.display = 'block';
+        updateSaveButtonText();
+
+        showStatus(statusAdvanced, `Found ${data.recipe_count} recipes! Select which to import.`, 'success');
+      } else if (data.recipe_data) {
+        // Single recipe mode
+        allRecipes = [data.recipe_data];
+        selectedRecipes = [true];
+        activeRecipeIndex = 0;
+        currentRecipeData = data.recipe_data;
+
+        // Hide multi-recipe UI
+        multiRecipeHeader.style.display = 'none';
+        displayPreview(data.recipe_data);
+        previewContainer.style.display = 'block';
+        updateSaveButtonText();
+
+        showStatus(statusAdvanced, 'Preview loaded! Edit and save when ready.', 'success');
+      } else {
+        showStatus(statusAdvanced, 'Recipe data missing from response', 'error');
+      }
     } else {
       showStatus(statusAdvanced, data.message || 'Failed to preview recipe', 'error');
     }
@@ -328,6 +382,112 @@ function formatIngredient(ing) {
   return text.trim();
 }
 
+// Multi-recipe functions
+function displayMultiRecipeTabs() {
+  recipeTabs.innerHTML = '';
+
+  allRecipes.forEach((recipe, index) => {
+    const tab = document.createElement('div');
+    tab.className = `recipe-tab ${index === activeRecipeIndex ? 'active' : ''}`;
+    tab.innerHTML = `
+      <input type="checkbox" ${selectedRecipes[index] ? 'checked' : ''} data-index="${index}">
+      <span class="recipe-tab-title">${escapeHtml(recipe.title || `Recipe ${index + 1}`)}</span>
+    `;
+
+    // Click on tab to view recipe
+    tab.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'INPUT') {
+        switchToRecipe(index);
+      }
+    });
+
+    // Checkbox change
+    const checkbox = tab.querySelector('input');
+    checkbox.addEventListener('change', (e) => {
+      e.stopPropagation();
+      selectedRecipes[index] = checkbox.checked;
+      updateSelectAllCheckbox();
+      updateSaveButtonText();
+    });
+
+    recipeTabs.appendChild(tab);
+  });
+
+  // Set up select all checkbox
+  selectAllRecipes.checked = selectedRecipes.every(s => s);
+  selectAllRecipes.addEventListener('change', () => {
+    const checked = selectAllRecipes.checked;
+    selectedRecipes = selectedRecipes.map(() => checked);
+
+    // Update all checkboxes
+    recipeTabs.querySelectorAll('input[type="checkbox"]').forEach((cb, i) => {
+      cb.checked = checked;
+    });
+
+    updateSaveButtonText();
+  });
+}
+
+function switchToRecipe(index) {
+  // Save current edits before switching
+  saveCurrentEdits();
+
+  // Switch to new recipe
+  activeRecipeIndex = index;
+  currentRecipeData = allRecipes[index];
+
+  // Update tab active state
+  recipeTabs.querySelectorAll('.recipe-tab').forEach((tab, i) => {
+    if (i === index) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Display the new recipe
+  displayPreview(allRecipes[index]);
+}
+
+function saveCurrentEdits() {
+  if (activeRecipeIndex >= 0 && activeRecipeIndex < allRecipes.length) {
+    // Save title and description
+    allRecipes[activeRecipeIndex].title = previewTitle.value;
+    allRecipes[activeRecipeIndex].description = previewDescription.value;
+
+    // Save edited ingredients
+    const ingredientInputs = previewIngredients.querySelectorAll('input');
+    allRecipes[activeRecipeIndex].ingredients = Array.from(ingredientInputs).map(input => {
+      return parseIngredientText(input.value);
+    });
+
+    // Save edited steps
+    const stepInputs = previewSteps.querySelectorAll('input');
+    allRecipes[activeRecipeIndex].steps = Array.from(stepInputs).map(input => input.value);
+  }
+}
+
+function updateSelectAllCheckbox() {
+  const allSelected = selectedRecipes.every(s => s);
+  const noneSelected = selectedRecipes.every(s => !s);
+
+  selectAllRecipes.checked = allSelected;
+  selectAllRecipes.indeterminate = !allSelected && !noneSelected;
+}
+
+function updateSaveButtonText() {
+  const selectedCount = selectedRecipes.filter(s => s).length;
+  const totalCount = allRecipes.length;
+
+  if (totalCount > 1) {
+    saveText.textContent = `Save ${selectedCount} of ${totalCount} Recipes`;
+    saveEditedBtn.disabled = selectedCount === 0;
+  } else {
+    saveText.textContent = 'Save Recipe';
+    saveEditedBtn.disabled = false;
+  }
+}
+
 function removeIngredient(index) {
   if (currentRecipeData && currentRecipeData.ingredients) {
     currentRecipeData.ingredients.splice(index, 1);
@@ -343,72 +503,101 @@ function removeStep(index) {
 }
 
 async function handleSaveEdited() {
-  if (!currentRecipeData) {
-    showStatus(statusAdvanced, 'No recipe data to save', 'error');
-    return;
-  }
-
   const result = await chrome.storage.local.get(['authToken']);
   if (!result.authToken) {
     showStatus(statusAdvanced, 'Please log in first', 'error');
     return;
   }
 
-  // Collect edited data
-  const editedData = {
-    ...currentRecipeData,
-    title: previewTitle.value,
-    description: previewDescription.value
-  };
+  // Save current edits before processing
+  saveCurrentEdits();
 
-  // Collect edited ingredients
-  const ingredientInputs = previewIngredients.querySelectorAll('input');
-  editedData.ingredients = Array.from(ingredientInputs).map((input, index) => {
-    return parseIngredientText(input.value);
-  });
+  // Get selected recipes
+  const recipesToSave = allRecipes
+    .map((recipe, index) => ({ recipe, index }))
+    .filter(({ index }) => selectedRecipes[index]);
 
-  // Collect edited steps
-  const stepInputs = previewSteps.querySelectorAll('input');
-  editedData.steps = Array.from(stepInputs).map((input) => input.value);
+  if (recipesToSave.length === 0) {
+    showStatus(statusAdvanced, 'Please select at least one recipe to save', 'error');
+    return;
+  }
 
   saveEditedBtn.disabled = true;
   saveText.style.display = 'none';
   saveSpinner.style.display = 'inline-block';
 
+  const url = currentSourceUrl || '';
+  let savedCount = 0;
+  let failedCount = 0;
+  let lastRecipeUrl = null;
+
   try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = tabs[0]?.url || '';
+    // Show progress for multiple recipes
+    if (recipesToSave.length > 1) {
+      showStatus(statusAdvanced, `Saving ${recipesToSave.length} recipes...`, 'info');
+    }
 
-    const response = await fetch(`${API_BASE_URL}/api/extension/import`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${result.authToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ url, recipeData: editedData })
-    });
+    // Save each selected recipe
+    for (let i = 0; i < recipesToSave.length; i++) {
+      const { recipe } = recipesToSave[i];
 
-    const data = await response.json();
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/extension/import`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${result.authToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ url, recipeData: recipe })
+        });
 
-    if (response.ok) {
-      showStatus(statusAdvanced, 'Recipe saved successfully!', 'success');
+        const data = await response.json();
+
+        if (response.ok) {
+          savedCount++;
+          lastRecipeUrl = data.recipe_url;
+        } else {
+          failedCount++;
+          console.error(`[SAVE] Failed to save recipe ${i + 1}:`, data.message);
+        }
+      } catch (error) {
+        failedCount++;
+        console.error(`[SAVE] Error saving recipe ${i + 1}:`, error);
+      }
+
+      // Small delay between saves
+      if (i < recipesToSave.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    // Show result
+    if (savedCount > 0) {
+      const message = recipesToSave.length > 1
+        ? `Saved ${savedCount} of ${recipesToSave.length} recipes!`
+        : 'Recipe saved successfully!';
+      showStatus(statusAdvanced, message, failedCount > 0 ? 'info' : 'success');
 
       // Reset preview
       previewContainer.style.display = 'none';
+      multiRecipeHeader.style.display = 'none';
       currentRecipeData = null;
+      allRecipes = [];
+      selectedRecipes = [];
 
-      if (data.recipe_url) {
+      // Open recipe book if single recipe, or last recipe if multiple
+      if (lastRecipeUrl) {
         setTimeout(() => {
-          chrome.tabs.create({ url: data.recipe_url });
+          chrome.tabs.create({ url: savedCount > 1 ? `${API_BASE_URL}/recipe-book` : lastRecipeUrl });
         }, 1000);
       }
     } else {
-      showStatus(statusAdvanced, data.message || 'Failed to save recipe', 'error');
+      showStatus(statusAdvanced, 'Failed to save recipes', 'error');
     }
   } catch (error) {
     console.error('[SAVE] Error:', error);
-    showStatus(statusAdvanced, 'An error occurred while saving the recipe', 'error');
+    showStatus(statusAdvanced, 'An error occurred while saving', 'error');
   } finally {
     saveEditedBtn.disabled = false;
     saveText.style.display = 'inline';
@@ -428,21 +617,38 @@ function parseIngredientText(text) {
 
 // Bulk Import Tab Functions
 async function handleScanTabs() {
+  // Get tabs from current window only
   const tabs = await chrome.tabs.query({ currentWindow: true });
+
+  // Filter to only http/https URLs, exclude mise-en-place.recipes
+  const validTabs = tabs.filter(tab => {
+    if (!tab.url) return false;
+
+    const url = tab.url.toLowerCase();
+
+    // Only include http/https URLs
+    if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
+
+    // Exclude our own site and chrome extension pages
+    if (url.includes('mise-en-place.recipes')) return false;
+    if (url.startsWith('chrome://')) return false;
+    if (url.startsWith('chrome-extension://')) return false;
+
+    return true;
+  });
+
+  // Sort tabs by their index to maintain browser order
+  validTabs.sort((a, b) => a.index - b.index);
 
   tabsList.innerHTML = '';
   selectedTabs.clear();
 
-  if (tabs.length === 0) {
-    tabsList.innerHTML = '<p class="empty-state">No tabs found</p>';
+  if (validTabs.length === 0) {
+    tabsList.innerHTML = '<p class="empty-state">No recipe tabs found in this window.<br>Open some recipe pages and try again.</p>';
     return;
   }
 
-  tabs.forEach(tab => {
-    // Only show tabs with http/https URLs
-    if (!tab.url || (!tab.url.startsWith('http://') && !tab.url.startsWith('https://'))) {
-      return;
-    }
+  validTabs.forEach(tab => {
 
     const item = document.createElement('div');
     item.className = 'tab-item';
@@ -471,7 +677,7 @@ async function handleScanTabs() {
     tabsList.appendChild(item);
   });
 
-  showStatus(statusBulk, `Found ${tabs.length} tabs`, 'info');
+  showStatus(statusBulk, `Found ${validTabs.length} tab${validTabs.length === 1 ? '' : 's'} in this window`, 'info');
 }
 
 function handleTabSelection(checkbox) {
@@ -508,13 +714,21 @@ async function handleBulkImport() {
   let completed = 0;
   let failed = 0;
 
+  // Calculate and show estimated duration
+  const recipeCount = tabsArray.length;
+  const recipeWord = recipeCount === 1 ? 'recipe' : 'recipes';
+  const minTime = recipeCount * 20;
+  const maxTime = recipeCount * 30;
+
   importSelectedBtn.disabled = true;
   bulkProgress.style.display = 'block';
-  statusBulk.style.display = 'none';
+
+  // Show estimated duration message
+  showStatus(statusBulk, `Processing ${recipeCount} ${recipeWord}... This may take ~${minTime}-${maxTime} seconds`, 'info');
 
   for (let i = 0; i < tabsArray.length; i++) {
     const tab = tabsArray[i];
-    progressText.textContent = `Importing ${i + 1} of ${tabsArray.length}...`;
+    progressText.textContent = `Importing ${i + 1} of ${tabsArray.length}... This may take 10-30 seconds per recipe`;
     progressFill.style.width = `${((i + 1) / tabsArray.length) * 100}%`;
 
     try {
