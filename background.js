@@ -30,16 +30,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('[BACKGROUND] Received internal message:', request);
 
   if (request.type === 'OPEN_SIDE_PANEL') {
-    chrome.windows.getCurrent((window) => {
-      chrome.sidePanel.open({ windowId: window.id })
-        .then(() => {
-          console.log('[BACKGROUND] Side panel opened successfully');
-          sendResponse({ success: true });
-        })
-        .catch((error) => {
-          console.error('[BACKGROUND] Error opening side panel:', error);
-          sendResponse({ success: false, error: error.message });
-        });
+    // Try to open side panel for the current window
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.sidePanel.open({ windowId: tabs[0].windowId })
+          .then(() => {
+            console.log('[BACKGROUND] Side panel opened successfully');
+            sendResponse({ success: true });
+          })
+          .catch((error) => {
+            console.error('[BACKGROUND] Error opening side panel:', error);
+            sendResponse({ success: false, error: error.message });
+          });
+      } else {
+        sendResponse({ success: false, error: 'No active tab found' });
+      }
     });
     return true; // Keep channel open for async response
   }
