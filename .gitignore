@@ -44,3 +44,4 @@ build/
 
 # Chrome extension development
 .web-extension-id
+.gcp-saved-tokens.json

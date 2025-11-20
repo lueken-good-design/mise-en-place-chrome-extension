@@ -148,8 +148,11 @@ async function handleLogin(e) {
 
 // Handle Google login
 async function handleGoogleLogin() {
-  // Add extension=1 parameter to tell backend this is from extension
-  const authUrl = `${API_BASE_URL}/auth/google?extension=1`;
+  // Get the extension ID dynamically
+  const extensionId = chrome.runtime.id;
+
+  // Add extension=1 and the extension ID to tell backend this is from extension
+  const authUrl = `${API_BASE_URL}/auth/google?extension=1&extension_id=${extensionId}`;
 
   // Open in a centered popup window (common for OAuth flows)
   const width = 500;
